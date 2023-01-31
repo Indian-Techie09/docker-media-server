@@ -1,6 +1,7 @@
 #!/bin/bash
 # Docker and compose install
 sudo apt-get update 
+sudo apt install docker-compose
 sudo apt-get upgrade -y
 sudo apt-get install \
     ca-certificates \

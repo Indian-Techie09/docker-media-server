@@ -1,7 +1,7 @@
 #!/bin/bash
 # Docker Media Server
-sudo apt update 
-sudo apt upgrade -y
+sudo apt-get update 
+sudo apt-get upgrade -y
 mkdir dockere
 cd dockere
 mkdir appdata

@@ -26,7 +26,7 @@ x-common-keys-core: &common-keys-core
     - npm_proxy
   security_opt:
     - no-new-privileges:true
-  restart: unless-stopped
+  restart: always
 
 # Keys common to some of the dependent services/apps
 x-common-keys-apps: &common-keys-apps
@@ -54,15 +54,13 @@ services:
     <<: *common-keys-core # See EXTENSION FIELDS at the top
     container_name: nginx-proxy-manager
     image: 'jc21/nginx-proxy-manager:latest'
-    # For Static IP
     networks:
-    # For Static IP
       npm_proxy:
         ipv4_address: 27.24.15.2 # You can specify a static IP
     ports:
       - '80:80' # Public HTTP Port. Port Forwarding on Router is ON.
       - '443:443' # Public HTTPS Port. Port Forwarding on Router is ON.
-      - '81:81' # Admin Web Port. Port Forwarding on Router is OFF. Internal Home Network Access only - 192.168.89.254:81.
+      - '81:81' # Admin Web Port. Port Forwarding on Router is OFF. 
     volumes:
       - $DOCKERDIR/appdata/npm/config:/config 
       - $DOCKERDIR/appdata/npm/letsencrypt:/etc/letsencrypt
@@ -114,9 +112,9 @@ services:
       npm_proxy:
         ipv4_address: 27.24.15.5
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Asia/Kolkata
+      - PUID=$PUID
+      - PGID=$PGID
+      - TZ=$TZ
       - TRANSMISSION_WEB_HOME=/combustion-release/ #optional
     volumes:
       - $DOCKERDIR/appdata/transmission/config:/config
@@ -155,7 +153,7 @@ services:
       - LOG_LEVEL=info
       - LOG_HTML=false
       - CAPTCHA_SOLVER=none
-      - TZ=Asia/Kolkata
+      - TZ=$TZ
     ports:
       - 8191:8191
     restart: unless-stopped
@@ -285,9 +283,9 @@ services:
       - 8266:8266 # server port
       - 8267:8267 # Internal node port
     environment:
-      - TZ=Asia/Kolkata
-      - PUID=1000
-      - PGID=1000
+      - TZ=$TZ
+      - PUID=$PUID
+      - PGID=$PGID
       - UMASK_SET=002
       - serverIP=27.24.15.14
       - serverPort=8266

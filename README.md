@@ -39,7 +39,7 @@ Containers set up are :-
 
 To install this script run
 ```bash
-  sudo apt get update
+  sudo apt-get update
 ```
 
 ```bash

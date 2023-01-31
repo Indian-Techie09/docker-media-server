@@ -121,7 +121,7 @@ services:
     volumes:
       - $DOCKERDIR/appdata/transmission/config:/config
       - $DATADIR/downloads:/downloads
-      - /home/jash/Desktop/watch:/watch
+      - $DOCKERDIR/watch:/watch
     ports:
       - 9091:9091
       - 51413:51413
@@ -301,7 +301,7 @@ services:
       - $DOCKERDIR/appdata/tdarr/config:/app/configs
       - $DOCKERDIR/appdata/tdarr/logs:/app/logs
       - $DATADIR/downloads:/media
-      - /home/jash/Desktop/temp:/temp
+      - $DOCKERDIR/temp:/temp
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
       - /dev/dri/card0:/dev/dri/card0

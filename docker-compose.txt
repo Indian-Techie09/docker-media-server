@@ -1,0 +1,364 @@
+version: "3.9"
+
+########################### NETWORKS
+
+networks:
+  default:
+    driver: bridge
+  npm_proxy:
+    name: npm_proxy
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 27.24.15.0/24
+
+########################### EXTENSION FIELDS
+
+# Common environment values
+x-environment: &default-tz-puid-pgid
+  TZ: $TZ
+  PUID: $PUID
+  PGID: $PGID
+
+# Keys common to some of the core services 
+x-common-keys-core: &common-keys-core
+  networks:
+    - npm_proxy
+  security_opt:
+    - no-new-privileges:true
+  restart: unless-stopped
+
+# Keys common to some of the dependent services/apps
+x-common-keys-apps: &common-keys-apps
+  networks:
+    - npm_proxy
+  security_opt:
+    - no-new-privileges:true
+  restart: unless-stopped
+
+# Keys common to some of the services in media-services.txt
+x-common-keys-media: &common-keys-media
+  networks:
+    - npm_proxy
+  security_opt:
+    - no-new-privileges:true
+  restart: unless-stopped
+
+########################### SERVICES
+services:
+
+  ############################# FRONTENDS
+
+  # Nginx Proxy Manager - Reverse Proxy with LetsEncrypt
+  npm:
+    <<: *common-keys-core # See EXTENSION FIELDS at the top
+    container_name: nginx-proxy-manager
+    image: 'jc21/nginx-proxy-manager:latest'
+    # For Static IP
+    networks:
+    # For Static IP
+      npm_proxy:
+        ipv4_address: 27.24.15.2 # You can specify a static IP
+    ports:
+      - '80:80' # Public HTTP Port. Port Forwarding on Router is ON.
+      - '443:443' # Public HTTPS Port. Port Forwarding on Router is ON.
+      - '81:81' # Admin Web Port. Port Forwarding on Router is OFF. Internal Home Network Access only - 192.168.89.254:81.
+    volumes:
+      - $DOCKERDIR/appdata/npm/config:/config 
+      - $DOCKERDIR/appdata/npm/letsencrypt:/etc/letsencrypt
+      - $DOCKERDIR/appdata/npm/data:/data
+    environment:
+      DB_SQLITE_FILE: "/config/database.sqlite"
+      DISABLE_IPV6: 'true'
+
+  # Portainer - WebUI for Containers
+  portainer:
+    <<: *common-keys-core # See EXTENSION FIELDS at the top
+    container_name: portainer
+    image: portainer/portainer-ce:latest
+    command: -H unix:///var/run/docker.sock 
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.3
+    ports: 
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro 
+      - $DOCKERDIR/appdata/portainer/data:/data 
+    environment:
+      - TZ=$TZ
+
+  # Heimdall - Application Dashboard
+  heimdall:
+    <<: *common-keys-core # See EXTENSION FIELDS at the top
+    image: lscr.io/linuxserver/heimdall
+    container_name: heimdall
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.4
+    ports:
+      - "83:80" # 80 to 82 already taken by other services
+      # - "444:443" # 443 used by Nginx Proxy Manager. Disabled because we will put Heimdall behind proxy.
+    volumes:
+      - $DOCKERDIR/appdata/heimdall:/config
+    environment:
+      <<: *default-tz-puid-pgid
+
+  ############################# DOWNLOADERS
+
+  # Transmission - Torrent Downloader
+  transmission:
+    image: lscr.io/linuxserver/transmission:latest
+    container_name: transmission
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.5
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+      - TRANSMISSION_WEB_HOME=/combustion-release/ #optional
+    volumes:
+      - $DOCKERDIR/appdata/transmission/config:/config
+      - $DATADIR/downloads:/downloads
+      - /home/jash/Desktop/watch:/watch
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    restart: unless-stopped
+
+  # Prowlarr - Indexer Proxy
+  prowlarr:
+    <<: *common-keys-apps # See EXTENSION FIELDS at the top
+    image: ghcr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.6
+    ports:
+      - "9696:9696"
+    volumes:
+      - $DOCKERDIR/appdata/prowlarr:/config
+      - "/etc/localtime:/etc/localtime:ro"
+    environment:
+      <<: *default-tz-puid-pgid
+
+  #flaresolvarr - prowlarr
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.7
+    environment:
+      - LOG_LEVEL=info
+      - LOG_HTML=false
+      - CAPTCHA_SOLVER=none
+      - TZ=Asia/Kolkata
+    ports:
+      - 8191:8191
+    restart: unless-stopped
+
+  # Lidarr - Music Management
+  lidarr:
+    <<: *common-keys-media # See EXTENSION FIELDS at the top
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.8
+    ports:
+      - "8686:8686"
+    volumes:
+      - $DOCKERDIR/appdata/lidarr:/config
+      - $DATADIR/downloads:/downloads
+      - $DATADIR/media/music:/music
+      - "/etc/localtime:/etc/localtime:ro"
+    environment:
+      <<: *default-tz-puid-pgid
+
+  # Radarr - Movie management
+  radarr:
+    <<: *common-keys-media # See EXTENSION FIELDS at the top
+    image: lscr.io/linuxserver/radarr:latest 
+    container_name: radarr
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.9
+    ports:
+      - "7878:7878"
+    volumes:
+      - $DOCKERDIR/appdata/radarr:/config
+      - $DATADIR/media/movies:/movies
+      - "/etc/localtime:/etc/localtime:ro"
+      - $DATADIR/downloads:/downloads
+    environment:
+      <<: *default-tz-puid-pgid
+
+  # Sonarr - TV Shows management
+  sonarr:
+    <<: *common-keys-media # See EXTENSION FIELDS at the top
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.10
+    ports:
+      - "8989:8989"
+    volumes:
+      - $DOCKERDIR/appdata/sonarr:/config
+      - $DATADIR/media/shows:/shows
+      - "/etc/localtime:/etc/localtime:ro"
+      - $DATADIR/downloads:/downloads
+    environment:
+      <<: *default-tz-puid-pgid
+
+  # Readarr - Books management
+  readarr:
+    <<: *common-keys-media # See EXTENSION FIELDS at the top
+    image: lscr.io/linuxserver/readarr:develop
+    container_name: readarr
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.11
+    ports:
+      - "8787:8787"
+    volumes:
+      - $DOCKERDIR/appdata/readarr:/config
+      - $DATADIR/media/books:/books
+      - "/etc/localtime:/etc/localtime:ro"
+      - $DATADIR/downloads:/downloads
+    environment:
+      <<: *default-tz-puid-pgid
+      UMASK: 002
+      #ARGS: ""
+
+  ############################# MEDIA
+
+  # Jellyfin - Media Server
+  jellyfin:
+    <<: *common-keys-media # See EXTENSION FIELDS at the top
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.12
+    ports:
+      - "8096:8096"
+      - "8920:8920" 
+    environment:
+      <<: *default-tz-puid-pgid
+      UMASK_SET: 022
+    volumes:
+      - $DOCKERDIR/appdata/jellyfin:/config
+      - $DATADIR/downloads:/downloads
+      - $DATADIR/media:/media
+
+  # Kavita - Reading
+  kavita:
+    <<: *common-keys-media # See EXTENSION FIELDS at the top
+    image: kizaing/kavita:latest
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.13
+    volumes:
+      - $DOCKERDIR/appdata/kavita:/config
+      - $DATADIR/downloads/books:/books
+    ports:
+      - "5000:5000"
+    environment:
+      <<: *default-tz-puid-pgid
+    restart: unless-stopped
+
+  # Tdarr - Transcoding
+  tdarr:
+    <<: *common-keys-media # See EXTENSION FIELDS at the top
+    container_name: tdarr
+    image: ghcr.io/haveagitgat/tdarr:latest
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.14
+    restart: unless-stopped
+    ports:
+      - 8265:8265 # webUI port
+      - 8266:8266 # server port
+      - 8267:8267 # Internal node port
+    environment:
+      - TZ=Asia/Kolkata
+      - PUID=1000
+      - PGID=1000
+      - UMASK_SET=002
+      - serverIP=27.24.15.14
+      - serverPort=8266
+      - webUIPort=8265
+      - internalNode=true
+      - nodeID=MyInternalNode
+      - nodeIP=27.24.15.14
+      - nodePort=8267
+    volumes:
+      - $DOCKERDIR/appdata/tdarr/server:/app/server
+      - $DOCKERDIR/appdata/tdarr/config:/app/configs
+      - $DOCKERDIR/appdata/tdarr/logs:/app/logs
+      - $DATADIR/downloads:/media
+      - /home/jash/Desktop/temp:/temp
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/dri/card0:/dev/dri/card0
+
+  ############################# UTILITIES
+ 
+  # Dozzle - Real-time Docker Log Viewer
+  dozzle:
+    <<: *common-keys-apps # See EXTENSION FIELDS at the top
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.15
+    ports:
+      - "8080:8080" 
+    environment:
+      DOZZLE_LEVEL: info
+      DOZZLE_TAILSIZE: 300
+      DOZZLE_FILTER: "status=running"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock 
+
+  # File Browser - Explorer
+  filebrowser:
+    <<: *common-keys-core # See EXTENSION FIELDS at the top
+    image: filebrowser/filebrowser:s6
+    container_name: filebrowser
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.16
+    ports:
+      - "82:80" # 80 and 81 are used by Nginx Proxy Manager
+    volumes:
+      - $DOCKERDIR/appdata/filebrowser:/config 
+      - $USERDIR:/srv
+    environment:
+      <<: *default-tz-puid-pgid
+
+  ############################# MAINTENANCE
+
+  # WatchTower - Automatic Docker Container Updates
+  watchtower:
+    <<: *common-keys-core # See EXTENSION FIELDS at the top
+    image: containrrr/watchtower
+    container_name: watchtower
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.17
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      TZ: $TZ
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_REMOVE_VOLUMES: "true"
+      WATCHTOWER_INCLUDE_STOPPED: "true"
+      WATCHTOWER_NO_STARTUP_MESSAGE: "false"
+      WATCHTOWER_SCHEDULE: "0 30 2 * * *" # Everyday at 2:30a.m
+      DOCKER_API_VERSION: "1.40"
+      

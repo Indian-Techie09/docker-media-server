@@ -1,12 +1,7 @@
 #!/bin/bash
 # Docker Media Server
-sudo apt update -y
+sudo apt update 
 sudo apt upgrade -y
-cd ..
-cd ..
-cd ..
-cd ..
-cd /home/$USER
 mkdir docker
 cd docker
 mkdir appdata

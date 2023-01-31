@@ -2,8 +2,8 @@
 # Docker Media Server
 sudo apt update 
 sudo apt upgrade -y
-mkdir docker
-cd docker
+mkdir dockere
+cd dockere
 mkdir appdata
 mkdir custom
 mkdir logs
@@ -20,9 +20,9 @@ sleep 5
 cd ..
 sudo apt install acl
 sudo chmod 775 /home/$USER/docker
-sudo setfacl -Rdm g:docker:rwx /home/$USER/docker
-sudo setfacl -Rm g:docker:rwx /home/$USER/docker
-cd docker
+sudo setfacl -Rdm g:docker:rwx /home/$USER/dockere
+sudo setfacl -Rm g:docker:rwx /home/$USER/dockere
+cd dockere
 sudo chown root:root .env
 sudo chmod 600 .env
 sudo nano .env

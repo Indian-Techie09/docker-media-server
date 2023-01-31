@@ -19,7 +19,7 @@ wget -O $PWD/.env https://raw.githubusercontent.com/Indian-Techie09/docker-media
 sleep 5
 cd ..
 sudo apt install acl
-sudo chmod 775 /home/$USER/docker
+sudo chmod 775 /home/$USER/dockere
 sudo setfacl -Rdm g:docker:rwx /home/$USER/dockere
 sudo setfacl -Rm g:docker:rwx /home/$USER/dockere
 cd dockere

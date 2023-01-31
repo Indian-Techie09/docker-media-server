@@ -62,5 +62,8 @@ bash dockermediaserver.sh
 Once you run the script .env file will open change UGID, PGID, Time Zone and data directory where you want to store your data.
 Once done Save the file and run
 ```bash
+cd docker
+```
+```bash
 sudo docker compose up
 ```

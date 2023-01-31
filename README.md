@@ -37,6 +37,17 @@ Containers set up are :-
 1. WatchTower - Automatic Docker Container Updates. 
 ## Deployment
 
+To install docker and compose run
+```bash
+sudo apt-get update
+```
+
+```bash
+wget -O /home/$USER/installdocker.sh https://raw.githubusercontent.com/Indian-Techie09/docker-media-server/main/installdocker.sh
+```
+```bash
+bash installdocker.sh
+```
 To install this script run
 ```bash
 sudo apt-get update

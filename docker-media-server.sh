@@ -15,9 +15,13 @@ mkdir logs
 mkdir secrets
 mkdir shared
 mkdir scripts
+mkdir watch
+mkdir temp
+sleep 5
 wget -O $PWD/docker-compose.yml https://raw.githubusercontent.com/Indian-Techie09/docker-media-server/main/docker-compose.yml
+sleep 5
 wget -O $PWD/.env https://raw.githubusercontent.com/Indian-Techie09/docker-media-server/main/.env
-sleep 5s
+sleep 5
 cd ..
 sudo apt install acl
 sudo chmod 775 /home/$USER/docker

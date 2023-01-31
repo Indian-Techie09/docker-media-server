@@ -43,10 +43,10 @@ To install this script run
 ```
 
 ```bash
-  wget -O /home/$USER/mediaserver.sh https://raw.githubusercontent.com/Indian-Techie09/docker-media-server/main/docker-media-server.sh
+  wget -O /home/$USER/bash.sh https://raw.githubusercontent.com/Indian-Techie09/docker-media-server/main/docker-media-server.sh
 ```
 ```bash
-  bash mediaserver.sh
+  bash bash.sh
 ```
 Once you run the script .env file will open change UGID, PGID, Time Zone and data directory where you want to store your data.
 Once done Save the file and run

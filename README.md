@@ -3,7 +3,7 @@
 
 This bash script will help you to automatically set up the basic docker containers you need for a media server from scratch.
 NOTE:you must not have a docker directory inside your /home/$USER/
-This script wont install docker and docker compose make sure you already have it.
+
 
 ## Documentation
 
@@ -67,3 +67,6 @@ cd docker
 ```bash
 sudo docker compose up
 ```
+### Note for Tdarr
+
+I do not have a dedicated GPU for transcoding so I am using Intel quicksync but if you have a dedicated GPU just add it to the docker-compose.yml file 

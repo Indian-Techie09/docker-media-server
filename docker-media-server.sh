@@ -2,6 +2,8 @@
 # Docker Media Server
 sudo apt-get update 
 sudo apt-get upgrade -y
+mkdir temp
+mkdir watch
 mkdir docker
 cd docker
 mkdir appdata
@@ -10,8 +12,6 @@ mkdir logs
 mkdir secrets
 mkdir shared
 mkdir scripts
-mkdir watch
-mkdir temp
 sleep 5
 wget -O $PWD/docker-compose.yml https://raw.githubusercontent.com/Indian-Techie09/docker-media-server/main/docker-compose.yml
 sleep 5

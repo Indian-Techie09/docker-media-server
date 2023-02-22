@@ -104,27 +104,24 @@ services:
 
   ############################# DOWNLOADERS
 
-  # Transmission - Torrent Downloader
-  transmission:
-    image: lscr.io/linuxserver/transmission:latest
-    container_name: transmission
+  
+  # Deluge - Torrent downloader 
+  deluge:
+    <<: *common-keys-apps # See EXTENSION FIELDS at the top
+    image: lscr.io/linuxserver/deluge:latest
+    container_name: deluge
     networks:
       npm_proxy:
         ipv4_address: 27.24.15.5
-    environment:
-      - PUID=$PUID
-      - PGID=$PGID
-      - TZ=$TZ
-      - TRANSMISSION_WEB_HOME=/combustion-release/ #optional
-    volumes:
-      - $DOCKERDIR/appdata/transmission/config:/config
-      - $DATADIR/downloads:/downloads
-      - $USERDIR/watch:/watch
     ports:
-      - 9091:9091
-      - 51413:51413
-      - 51413:51413/udp
-    restart: unless-stopped
+      - 8112:8112
+      - 6881:6881
+      - 6881:6881/udp
+    volumes:
+      - $DOCKERDIR/appdata/deluge:/config
+      - $DATADIR/downloads:/downloads 
+    environment:
+      <<: *default-tz-puid-pgid
 
   # Prowlarr - Indexer Proxy
   prowlarr:
@@ -232,6 +229,22 @@ services:
       UMASK: 002
       #ARGS: ""
 
+  # Bazarr - subtittles
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    networks:
+      npm_proxy:
+        ipv4_address: 27.24.15.12
+    environment:
+      <<: *default-tz-puid-pgid
+    volumes:
+      - $DOCKERDIR/appdata/bazarr:/config
+      - $DATADIR/downloads/movies:/movies #optional
+      - $DATADIR/downloads/shows:/shows #optional
+    ports:
+      - 6767:6767
+    restart: unless-stopped  
   ############################# MEDIA
 
   # Jellyfin - Media Server
@@ -241,7 +254,7 @@ services:
     container_name: jellyfin
     networks:
       npm_proxy:
-        ipv4_address: 27.24.15.12
+        ipv4_address: 27.24.15.13
     ports:
       - "8096:8096"
       - "8920:8920" 
@@ -259,7 +272,7 @@ services:
     image: kizaing/kavita:latest
     networks:
       npm_proxy:
-        ipv4_address: 27.24.15.13
+        ipv4_address: 27.24.15.14
     volumes:
       - $DOCKERDIR/appdata/kavita:/config
       - $DATADIR/downloads/books:/books
@@ -276,7 +289,7 @@ services:
     image: ghcr.io/haveagitgat/tdarr:latest
     networks:
       npm_proxy:
-        ipv4_address: 27.24.15.14
+        ipv4_address: 27.24.15.15
     restart: unless-stopped
     ports:
       - 8265:8265 # webUI port
@@ -287,12 +300,12 @@ services:
       - PUID=$PUID
       - PGID=$PGID
       - UMASK_SET=002
-      - serverIP=27.24.15.14
+      - serverIP=27.24.15.15
       - serverPort=8266
       - webUIPort=8265
       - internalNode=true
       - nodeID=MyInternalNode
-      - nodeIP=27.24.15.14
+      - nodeIP=27.24.15.15
       - nodePort=8267
     volumes:
       - $DOCKERDIR/appdata/tdarr/server:/app/server
@@ -313,9 +326,9 @@ services:
     container_name: dozzle
     networks:
       npm_proxy:
-        ipv4_address: 27.24.15.15
+        ipv4_address: 27.24.15.16
     ports:
-      - "8080:8080" 
+      - "8090:8080" 
     environment:
       DOZZLE_LEVEL: info
       DOZZLE_TAILSIZE: 300
@@ -330,7 +343,7 @@ services:
     container_name: filebrowser
     networks:
       npm_proxy:
-        ipv4_address: 27.24.15.16
+        ipv4_address: 27.24.15.17
     ports:
       - "82:80" # 80 and 81 are used by Nginx Proxy Manager
     volumes:
@@ -348,7 +361,7 @@ services:
     container_name: watchtower
     networks:
       npm_proxy:
-        ipv4_address: 27.24.15.17
+        ipv4_address: 27.24.15.18
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:

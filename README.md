@@ -16,7 +16,7 @@ Containers set up are :-
 
 ### Downloaders
 
-1. Transmission - Torrent Downloader. WebUI port - 9091
+1. Deluge - Torrent Downloader. WebUI port - 8112
 2. Prowlarr - Indexer. WebUI port - 9696
 3. Flaresolverr -For Prowlarr.  WebUI port - 8191
 4. Lidarr - Music. WebUI port - 8686
@@ -25,7 +25,8 @@ Containers set up are :-
 7. Readarr - Books. WebUI port - 8787
 8. Jellyfin - Media Player. WebUI port - 8096
 9. Kavita - Reading. WebUI port - 5000
-10. Tdarr - Transcoding . WebUI port - 8265
+10. Tdarr - Transcoding. WebUI port - 8265
+11. Bazarr - Subtitles. WebUI - 6767 
 
 ### Utilities
 

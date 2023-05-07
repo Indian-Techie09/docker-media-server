@@ -11,8 +11,7 @@ Containers set up are :-
 ### Frontend
 
 1. Nginx Proxy Manager - Reverse Proxy with LetsEncrypt. WebUI port - 81
-2. Portainer - WebUI for Containers. WebUI port - 9000
-3. Heimdall - Simple Dashboard. WebUI port - 83
+2. Heimdall - Simple Dashboard. WebUI port - 83
 
 ### Downloaders
 
